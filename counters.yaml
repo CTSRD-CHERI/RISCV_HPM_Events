@@ -1,0 +1,60 @@
+---
+  core_events:
+    toooba_name: "core_evts_vec"
+    start_off: 0x00
+    end_off: 0x1e
+    events:
+      no_ev:    0x00
+      redirect: 0x01
+      traps:    0x02
+      branch:   0x03
+      jal:      0x04
+      jalr:     0x05
+      auipc:    0x06
+      load:     0x07
+      store:    0x08
+      lr:       0x09
+      sc:       0x0a
+      amo:      0x0b
+      serial_shift: 0x0c
+      int_mul_div:  0x0d
+      fp:       0x0e
+      sc_succ:  0x0f
+      ld_wait:  0x10
+      st_wait:  0x11
+      fence:    0x12
+      mem_cap_ld: 0x1a
+      mem_cap_st: 0x1b
+      mem_cap_ld_tag_set: 0x1c
+      mem_cap_st_tag_set: 0x1d
+
+
+  i_l1_events:
+    toooba_name: "imem_evts_vec"
+    start_off: 0x20
+    end_off: 0x2d
+    events:
+      ld:       0x0
+      ld_miss:  0x1
+      ld_miss_lat: 0x02
+      tlb:      0x09
+      tlb_miss: 0x0a
+      tlb_miss_lat: 0x0b
+      tlb_flush: 0x0c
+
+  d_l1_events:
+    toooba_name: "dmem_evts_vec"
+    start_off: 0x20
+    end_off: 0x2d
+    events:
+      ld:       0x0
+      ld_miss:  0x1
+      ld_miss_lat: 0x02
+      st:       0x03
+      amo:      0x06
+      amo_miss: 0x07
+      amo_miss_lat: 0x08
+      tlb:      0x09
+      tlb_miss: 0x0a
+      tlb_miss_lat: 0x0b
+      tlb_flush: 0x0c
