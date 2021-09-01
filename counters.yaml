@@ -91,3 +91,27 @@
       tlb_miss: 0x0a
       tlb_miss_lat: 0x0b
       tlb_flush: 0x0c
+
+  ll_events:
+    toooba_name: "llc_evts_vec"
+    start_off: 0x60
+    end_off: 0x6d
+    events:
+      ld_miss:  0x1
+      ld_miss_lat: 0x02
+      tlb:      0x09
+      tlb_miss: 0x0a
+      tlb_flush: 0x0c
+
+  tgc_events:
+    toooba_name: "tgc_evts_vec"
+    start_off: 0x40
+    end_off: 0x47
+    events:
+      write:      0x00
+      write_miss: 0x01
+      read:       0x02
+      read_miss:  0x03
+      evict:      0x04
+      set_tag_w:  0x05
+      set_tag_r:  0x06
