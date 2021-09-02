@@ -112,7 +112,7 @@
 
   tgc_events:
     vec_name: "tgc_evts_vec"
-    struct_name: "EventsTGC"
+    struct_name: "EventsCacheCore"
     start_off: 0x40
     end_off: 0x47
     events:
