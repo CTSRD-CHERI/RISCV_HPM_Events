@@ -33,13 +33,14 @@
 # SUCH DAMAGE.
 
   core_events:
-    toooba_name: "core_evts_vec"
+    vec_name: "core_evts_vec"
+    struct_name: "EventsCore"
     start_off: 0x00
     end_off: 0x1e
     events:
       no_ev:    0x00
       redirect: 0x01
-      traps:    0x02
+      trap:    0x02
       branch:   0x03
       jal:      0x04
       jalr:     0x05
@@ -50,20 +51,21 @@
       sc:       0x0a
       amo:      0x0b
       serial_shift: 0x0c
-      int_mul_div:  0x0d
+      int_mul_divi_rem:  0x0d
       fp:       0x0e
-      sc_succ:  0x0f
-      ld_wait:  0x10
-      st_wait:  0x11
+      sc_success:  0x0f
+      lodd_wait:  0x10
+      store_wait:  0x11
       fence:    0x12
-      mem_cap_ld: 0x1a
-      mem_cap_st: 0x1b
-      mem_cap_ld_tag_set: 0x1c
-      mem_cap_st_tag_set: 0x1d
+      mem_cap_load: 0x1a
+      mem_cap_store: 0x1b
+      mem_cap_lodd_tag_set: 0x1c
+      mem_cap_store_tag_set: 0x1d
 
 
   i_l1_events:
-    toooba_name: "imem_evts_vec"
+    vec_name: "imem_evts_vec"
+    struct_name: "EventsL1I"
     start_off: 0x20
     end_off: 0x2d
     events:
@@ -76,7 +78,8 @@
       tlb_flush: 0x0c
 
   d_l1_events:
-    toooba_name: "dmem_evts_vec"
+    vec_name: "dmem_evts_vec"
+    struct_name: "EventsL1D"
     start_off: 0x30
     end_off: 0x3d
     events:
@@ -93,7 +96,8 @@
       tlb_flush: 0x0c
 
   ll_events:
-    toooba_name: "llc_evts_vec"
+    vec_name: "llc_evts_vec"
+    struct_name: "EventsLL"
     start_off: 0x60
     end_off: 0x6d
     events:
@@ -104,7 +108,8 @@
       tlb_flush: 0x0c
 
   tgc_events:
-    toooba_name: "tgc_evts_vec"
+    vec_name: "tgc_evts_vec"
+    struct_name: "EventsTGC"
     start_off: 0x40
     end_off: 0x47
     events:
@@ -113,5 +118,5 @@
       read:       0x02
       read_miss:  0x03
       evict:      0x04
-      set_tag_w:  0x05
-      set_tag_r:  0x06
+      set_tag_write:  0x05
+      set_tag_read:  0x06
