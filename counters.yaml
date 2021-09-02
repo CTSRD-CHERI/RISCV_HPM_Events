@@ -87,6 +87,8 @@
       ld_miss:  0x1
       ld_miss_lat: 0x02
       st:       0x03
+      st_miss:  0x04
+      st_miss_lat: 0x05
       amo:      0x06
       amo_miss: 0x07
       amo_miss_lat: 0x08
@@ -103,6 +105,7 @@
     events:
       ld_miss:  0x1
       ld_miss_lat: 0x02
+      st_miss: 0x4
       tlb:      0x09
       tlb_miss: 0x0a
       tlb_flush: 0x0c

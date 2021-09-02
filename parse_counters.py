@@ -144,7 +144,6 @@ if args.bsv_stat_definitions_output:
         for k in (ya.keys()):
             decl = "\n\ntypedef struct {"
             for i in range(ya[k]["end_off"] - ya[k]["start_off"]):
-                print(i)
                 taken = False
                 for c in (ya[k]["events"]):
                     if(ya[k]["events"][c] == i):
