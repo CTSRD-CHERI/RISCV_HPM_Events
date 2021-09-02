@@ -51,15 +51,15 @@
       sc:       0x0a
       amo:      0x0b
       serial_shift: 0x0c
-      int_mul_divi_rem:  0x0d
+      int_mul_div_rem:  0x0d
       fp:       0x0e
       sc_success:  0x0f
-      lodd_wait:  0x10
+      load_wait:  0x10
       store_wait:  0x11
       fence:    0x12
       mem_cap_load: 0x1a
       mem_cap_store: 0x1b
-      mem_cap_lodd_tag_set: 0x1c
+      mem_cap_load_tag_set: 0x1c
       mem_cap_store_tag_set: 0x1d
 
 
