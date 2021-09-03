@@ -141,6 +141,9 @@ if args.bsv_stat_definitions_output:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
 
         # can possibly be optimised
+        hpm_events_struct = ""
+        if(len(ya) > 0):
+            hpm_events_struct += "\n\ntypedef struct {"
         for k in (ya.keys()):
             decl = "\n\ntypedef struct {"
             for i in range(ya[k]["end_off"] - ya[k]["start_off"]):
@@ -154,10 +157,14 @@ if args.bsv_stat_definitions_output:
                     decl += "\n\tSupCnt evt_ZERO_" + str(i) + ";"
             decl += "\n} " + ya[k]["struct_name"] + " deriving (Bits, FShow);"
             struct_decls += decl
+            hpm_events_struct += "\n\tMaybe#(" + ya[k]["struct_name"] + ") mab_" + ya[k]["struct_name"] + ";"
+        if(len(ya) > 0):
+            hpm_events_struct += "\n} HPMEvents deriving (Bits, FShow);"
         ofile.write(header)
         ofile.write(imp_decl)
         ofile.write(_ifdef)
         ofile.write(struct_decls)
+        ofile.write(hpm_events_struct);
         ofile.write(_endif)
 
 
