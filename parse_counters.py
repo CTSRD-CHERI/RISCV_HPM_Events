@@ -117,7 +117,7 @@ if args.bsv_output:
             start_off = vec_list[i]["start_off"]
 
             size = end_off - start_off
-            vec_defs += "\n\tVector#(" + str(size) + ", SupCnt) vec_" + vec_list[i]["struct_name"] + " = replicate(0);"
+            vec_defs += "\n\tVector#(" + str(size) + ", Bit#(Report_Width)) vec_" + vec_list[i]["struct_name"] + " = replicate(0);"
             struct_acc += "\n\tif(ev.mab_" + vec_list[i]["struct_name"] + " matches tagged Valid .t) begin"
             struct_acc += "\n\t\tvec_" + vec_list[i]["struct_name"] + " = unpack(pack(t));"
             struct_acc += "\n\tend"
@@ -126,7 +126,7 @@ if args.bsv_output:
             if (i + 1 < len(vec_list) and len(vec_list)):
                 start_off_1 = vec_list[i+1]["start_off"]
                 diff = start_off_1 - end_off
-                zero_decls += "\n\tVector#(%d, SupCnt) zero_vec_%d = replicate(0);" % (diff, i)
+                zero_decls += "\n\tVector#(%d, Bit#(Report_Width)) zero_vec_%d = replicate(0);" % (diff, i)
                 append_list.append("zero_vec_%d" % i)
 
         for i in range(len(append_list)):
@@ -141,7 +141,7 @@ if args.bsv_output:
 
         print(no_of_ev)
 
-        f_begin = "\n\nfunction Vector#(" + str(no_of_ev) + ", SupCnt) generateHPMVector(HPMEvents ev);"
+        f_begin = "\n\nfunction Vector#(" + str(no_of_ev) + ", Bit#(Report_Width)) generateHPMVector(HPMEvents ev);"
         ret = "\n\treturn events;"
 
         ofile.write(header)
@@ -178,11 +178,11 @@ if args.bsv_stat_definitions_output:
                 taken = False
                 for c in (ya[k]["events"]):
                     if(ya[k]["events"][c] == i):
-                        decl += "\n\tSupCnt evt_" + c.upper() + ";"
+                        decl += "\n\tBit#(Report_Width) evt_" + c.upper() + ";"
                         taken = True
                         break
                 if not taken:
-                    decl += "\n\tSupCnt evt_ZERO_" + str(i) + ";"
+                    decl += "\n\tBit#(Report_Width) evt_ZERO_" + str(i) + ";"
             decl += "\n} " + ya[k]["struct_name"] + " deriving (Bits, FShow);"
             struct_decls += decl
             hpm_events_struct += "\n\tMaybe#(" + ya[k]["struct_name"] + ") mab_" + ya[k]["struct_name"] + ";"
