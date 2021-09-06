@@ -119,7 +119,7 @@ if args.bsv_output:
             size = end_off - start_off
             vec_defs += "\n\tVector#(" + str(size) + ", Bit#(Report_Width)) vec_" + vec_list[i]["struct_name"] + " = replicate(0);"
             struct_acc += "\n\tif(ev.mab_" + vec_list[i]["struct_name"] + " matches tagged Valid .t) begin"
-            struct_acc += "\n\t\tvec_" + vec_list[i]["struct_name"] + " = unpack(pack(t));"
+            struct_acc += "\n\t\tvec_" + vec_list[i]["struct_name"] + " = reverse(unpack(pack(t)));"
             struct_acc += "\n\tend"
             no_of_ev = max(vec_list[i]["end_off"], no_of_ev)
             append_list.append("vec_" + vec_list[i]["struct_name"])

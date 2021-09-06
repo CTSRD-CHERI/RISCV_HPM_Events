@@ -123,3 +123,14 @@
       evict:      0x04
       set_tag_write:  0x05
       set_tag_read:  0x06
+
+  trans_exe_events:
+    vec_name: "trans_exe_evts_vec"
+    struct_name: "EventsTransExe"
+    start_off: 0x70
+    end_off: 0x73
+    events:
+      renamed_inst: 0x00
+      wild_jump: 0x01
+      wild_exception: 0x02
+
