@@ -142,8 +142,6 @@ if args.bsv_output:
                 app_decls += "\n\tevents = append(events, " + (append_list[i]) + ");"
 
 
-        print(no_of_ev)
-
         f_begin = "\n\nfunction Vector#(" + str(no_of_ev) + ", Bit#(Report_Width)) generateHPMVector(HPMEvents ev);"
         ret = "\n\treturn events;"
 
@@ -168,7 +166,6 @@ if args.bsv_stat_definitions_output:
     struct_decls = ""
     no_of_events_decl = ""
     no_of_ev = 0
-    print(args.file_path)
     with open(args.file_path, "r") as yfile, open(args.bsv_stat_definitions_output, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
 
@@ -193,7 +190,6 @@ if args.bsv_stat_definitions_output:
             no_of_ev = max(ya[k]["end_off"], no_of_ev)
         if(len(ya) > 0):
             hpm_events_struct += "\n} HPMEvents deriving (Bits, FShow);"
-        print(no_of_ev)
         no_of_events_decl += "\n`ifdef CONTRACTS_VERIFY"
         no_of_events_decl += "\ntypedef %d No_Of_Evts;" % (no_of_ev + 16)
         no_of_events_decl += "\n`else"
