@@ -75,6 +75,9 @@ parser = argparse.ArgumentParser(description='''
 def roundup_power2 (x):
     return 2**(max(0, x-1)).bit_length()
 
+parser.add_argument('-f','--file-path', nargs='?', const="counters.yaml", default=None,
+                    help="path to the yaml file")
+
 parser.add_argument('-b','--bsv-output', nargs='?', const="GenerateHPMVector.bsv", default=None,
                     help="generate Bluespec file for defining RISC-V HPM events")
 
@@ -98,7 +101,7 @@ if args.bsv_output:
     struct_acc = ""
     vec_defs = ""
     no_of_ev = 0
-    with open("counters.yaml", "r") as yfile, open(args.bsv_output, "w") as ofile:
+    with open(args.file_path, "r") as yfile, open(args.bsv_output, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
         vec_list = []
         for k in (ya.keys()):
@@ -165,7 +168,8 @@ if args.bsv_stat_definitions_output:
     struct_decls = ""
     no_of_events_decl = ""
     no_of_ev = 0
-    with open("counters.yaml", "r") as yfile, open(args.bsv_stat_definitions_output, "w") as ofile:
+    print(args.file_path)
+    with open(args.file_path, "r") as yfile, open(args.bsv_stat_definitions_output, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
 
         # can possibly be optimised
