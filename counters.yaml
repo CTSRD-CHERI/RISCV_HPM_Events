@@ -33,17 +33,16 @@
 # SUCH DAMAGE.
 
   core_events:
-    vec_name: "core_evts_vec"
     struct_name: "EventsCore"
     start_off: 0x00
     end_off: 0x1e
     events:
+      jalr:     0x05
       no_ev:    0x00
       redirect: 0x01
       trap:    0x02
       branch:   0x03
       jal:      0x04
-      jalr:     0x05
       auipc:    0x06
       load:     0x07
       store:    0x08
@@ -64,7 +63,6 @@
 
 
   i_l1_events:
-    vec_name: "imem_evts_vec"
     struct_name: "EventsL1I"
     start_off: 0x20
     end_off: 0x2d
@@ -78,7 +76,6 @@
       tlb_flush: 0x0c
 
   d_l1_events:
-    vec_name: "dmem_evts_vec"
     struct_name: "EventsL1D"
     start_off: 0x30
     end_off: 0x3d
@@ -98,7 +95,6 @@
       tlb_flush: 0x0c
 
   ll_events:
-    vec_name: "llc_evts_vec"
     struct_name: "EventsLL"
     start_off: 0x60
     end_off: 0x6d
@@ -111,13 +107,12 @@
       tlb_flush: 0x0c
 
   tgc_events:
-    vec_name: "tgc_evts_vec"
     struct_name: "EventsCacheCore"
     start_off: 0x40
     end_off: 0x47
     events:
-      write:      0x00
       write_miss: 0x01
+      write:      0x00
       read:       0x02
       read_miss:  0x03
       evict:      0x04
@@ -125,7 +120,6 @@
       set_tag_read:  0x06
 
   trans_exe_events:
-    vec_name: "trans_exe_evts_vec"
     struct_name: "EventsTransExe"
     start_off: 0x70
     end_off: 0x73

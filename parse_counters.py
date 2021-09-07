@@ -176,21 +176,16 @@ if args.bsv_stat_definitions_output:
         hpm_events_struct = ""
         if(len(ya) > 0):
             hpm_events_struct += "\n\ntypedef struct {"
-        for k in (ya.keys()):
+        for key, item in (ya.items()):
+            li = list(item["events"].items())
+            li.sort(key=lambda x: x[1])
             decl = "\n\ntypedef struct {"
-            for i in range(ya[k]["end_off"] - ya[k]["start_off"]):
-                taken = False
-                for c in (ya[k]["events"]):
-                    if(ya[k]["events"][c] == i):
-                        decl += "\n\t" + data_t + " evt_" + c.upper() + ";"
-                        taken = True
-                        break
-                if not taken:
-                    decl += "\n\t" + data_t + " evt_ZERO_" + str(i) + ";"
-            decl += "\n} " + ya[k]["struct_name"] + " deriving (Bits, FShow);"
+            for cnt, idx in li:
+                decl += "\n\t" + data_t + " evt_" + cnt.upper() + ";"
+            decl += "\n} " + item["struct_name"] + " deriving (Bits, FShow);"
             struct_decls += decl
-            hpm_events_struct += "\n\tMaybe#(" + ya[k]["struct_name"] + ") mab_" + ya[k]["struct_name"] + ";"
-            no_of_ev = max(ya[k]["end_off"], no_of_ev)
+            hpm_events_struct += "\n\tMaybe#(" + item["struct_name"] + ") mab_" + item["struct_name"] + ";"
+            no_of_ev = max(item["end_off"], no_of_ev)
         if(len(ya) > 0):
             hpm_events_struct += "\n} HPMEvents deriving (Bits, FShow);"
         no_of_events_decl += "\ntypedef %d No_Of_Evts;" % (no_of_ev)
