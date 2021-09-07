@@ -190,11 +190,7 @@ if args.bsv_stat_definitions_output:
             no_of_ev = max(ya[k]["end_off"], no_of_ev)
         if(len(ya) > 0):
             hpm_events_struct += "\n} HPMEvents deriving (Bits, FShow);"
-        no_of_events_decl += "\n`ifdef CONTRACTS_VERIFY"
-        no_of_events_decl += "\ntypedef %d No_Of_Evts;" % (no_of_ev + 16)
-        no_of_events_decl += "\n`else"
         no_of_events_decl += "\ntypedef %d No_Of_Evts;" % (no_of_ev)
-        no_of_events_decl += "\n`endif"
         ofile.write(header)
         ofile.write(imp_decl)
         ofile.write(_ifdef)
