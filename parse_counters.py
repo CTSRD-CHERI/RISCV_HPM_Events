@@ -188,21 +188,15 @@ def genCOutput(file_path, ofile_name):
     with open(file_path, "r") as yfile, open(ofile_name, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
         vec_list = []
-        for k in (ya.keys()):
-            start_off = ya[k]["start_off"]
-            end_off = ya[k]["end_off"]
-            for c in (ya[k]["events"]):
-                if(ya[k]["events"][c] + start_off >= end_off):
-                    sys.exit("Node has counter numbers out of bounds: " + k)
-            vec_list.append((k, ya[k]["start_off"]))
-
-
-        vec_list.sort(key=lambda x: x[1])
         defines = ""
-        for tu in vec_list:
-            defines += "\n\n// " + tu[0].upper()
-            for c in ya[tu[0]]["events"]:
-                defines += "\n#define " + c.upper() + " " + str(ya[tu[0]]["events"][c] + tu[1])
+        for key, item in (ya.items()):
+            li = list(item["events"].items())
+            li.sort(key=lambda x: x[1])
+            start_off = item["start_off"]
+            defines += "\n\n// " + key.upper()
+            for cnt, idx in li:
+                defines += "\n#define " + key + "_" + cnt.upper() + " " + str(start_off + idx)
+
 
         ofile.write(header)
         ofile.write(defines)

@@ -37,12 +37,12 @@
     start_off: 0x00
     end_off: 0x1e
     events:
-      jalr:     0x05
       no_ev:    0x00
       redirect: 0x01
       trap:    0x02
       branch:   0x03
       jal:      0x04
+      jalr:     0x05
       auipc:    0x06
       load:     0x07
       store:    0x08
