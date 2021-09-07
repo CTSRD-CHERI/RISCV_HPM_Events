@@ -117,45 +117,35 @@ if args.bsv_output:
             vec_list.append(ya[k])
         vec_list.sort(key=lambda x: x["start_off"])
         append_list = []
-        zero_decls = "\n\t// Zero vector declarations"
-        app_decls = "\n\n\t// Appending vectors"
-        for i in range(len(vec_list)):
-            end_off = vec_list[i]["end_off"]
-            start_off = vec_list[i]["start_off"]
 
-            size = end_off - start_off
-            vec_defs += "\n\tVector#(" + str(size) + ", " + data_t + ") vec_" + vec_list[i]["struct_name"] + " = replicate(0);"
-            struct_acc += "\n\tif(ev.mab_" + vec_list[i]["struct_name"] + " matches tagged Valid .t) begin"
-            struct_acc += "\n\t\tvec_" + vec_list[i]["struct_name"] + " = reverse(unpack(pack(t)));"
+
+
+
+
+
+        for key, item in (ya.items()):
+            li = list(item["events"].items())
+            li.sort(key=lambda x: x[1])
+            if(len(li) == 0):
+                sys.exit("length == 0 of " + key)
+            offset = item["start_off"]
+            no_of_ev = max(item["end_off"], no_of_ev)
+            struct_acc += "\n\tif(ev.mab_" + item["struct_name"] + " matches tagged Valid .t) begin"
+            for cnt, idx in li:
+                struct_acc += "\n\t\tevents[" + str(offset + idx) + "] = t.evt_" + cnt.upper() + ";"
             struct_acc += "\n\tend"
-            no_of_ev = max(vec_list[i]["end_off"], no_of_ev)
-            append_list.append("vec_" + vec_list[i]["struct_name"])
-            if (i + 1 < len(vec_list) and len(vec_list)):
-                start_off_1 = vec_list[i+1]["start_off"]
-                diff = start_off_1 - end_off
-                zero_decls += "\n\tVector#(%d, %s) zero_vec_%d = replicate(0);" % (diff, data_t, i)
-                append_list.append("zero_vec_%d" % i)
 
-        for i in range(len(append_list)):
-            if(i < 2):
-                if(len(append_list) == 1):
-                    app_decls += "\n\tlet events = " + (append_list[i]) + ";"
-                elif (i == 1):
-                    app_decls += "\n\tlet events = append(" + (append_list[i-1]) + ", " + append_list[i] + ");"
-            else:
-                app_decls += "\n\tevents = append(events, " + (append_list[i]) + ");"
 
 
         f_begin = "\n\nfunction Vector#(" + str(no_of_ev) + ", " + data_t + ") generateHPMVector(HPMEvents ev);"
+        f_begin += "\n\tVector#(" + str(no_of_ev) + ", " + data_t + ") events;"
         ret = "\n\treturn events;"
 
         ofile.write(header)
         ofile.write(imp_decl)
         ofile.write(f_begin)
         ofile.write(vec_defs)
-        ofile.write(zero_decls)
         ofile.write(struct_acc)
-        ofile.write(app_decls)
         ofile.write(ret)
         ofile.write(f_end)
 
@@ -172,7 +162,6 @@ if args.bsv_stat_definitions_output:
     with open(args.file_path, "r") as yfile, open(args.bsv_stat_definitions_output, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
 
-        # can possibly be optimised
         hpm_events_struct = ""
         if(len(ya) > 0):
             hpm_events_struct += "\n\ntypedef struct {"
