@@ -94,8 +94,7 @@ parser.add_argument('-c','--c-output', nargs='?', const="counters.h", default=No
 
 args = parser.parse_args()
 
-
-if args.bsv_output:
+def genHPMVector(file_path, ofile_name):
     header = c_bsv_header
     header += header_date 
     imp_decl = "import Vector::*;"
@@ -105,7 +104,7 @@ if args.bsv_output:
     struct_acc = ""
     vec_defs = ""
     no_of_ev = 0
-    with open(args.file_path, "r") as yfile, open(args.bsv_output, "w") as ofile:
+    with open(file_path, "r") as yfile, open(ofile_name, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
         vec_list = []
         for k in (ya.keys()):
@@ -117,10 +116,6 @@ if args.bsv_output:
             vec_list.append(ya[k])
         vec_list.sort(key=lambda x: x["start_off"])
         append_list = []
-
-
-
-
 
 
         for key, item in (ya.items()):
@@ -138,7 +133,7 @@ if args.bsv_output:
 
 
         f_begin = "\n\nfunction Vector#(" + str(no_of_ev) + ", " + data_t + ") generateHPMVector(HPMEvents ev);"
-        f_begin += "\n\tVector#(" + str(no_of_ev) + ", " + data_t + ") events;"
+        f_begin += "\n\tVector#(" + str(no_of_ev) + ", " + data_t + ") events = replicate(0);"
         ret = "\n\treturn events;"
 
         ofile.write(header)
@@ -150,7 +145,7 @@ if args.bsv_output:
         ofile.write(f_end)
 
 
-if args.bsv_stat_definitions_output:
+def genStatCounters(file_path, ofile_name):
     header = c_bsv_header
     header += header_date
     imp_decl = "import ProcTypes::*;"
@@ -187,11 +182,10 @@ if args.bsv_stat_definitions_output:
         ofile.write(_endif)
 
 
-
-if args.c_output:
+def genCOutput(file_path, ofile_name):
     header = c_bsv_header
     header += header_date
-    with open("counters.yaml", "r") as yfile, open(args.c_output, "w") as ofile:
+    with open(file_path, "r") as yfile, open(ofile_name, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
         vec_list = []
         for k in (ya.keys()):
@@ -212,3 +206,39 @@ if args.c_output:
 
         ofile.write(header)
         ofile.write(defines)
+
+def main():
+    # noinspection PyTypeChecker
+
+    parser = argparse.ArgumentParser(description='''
+        Generate source files from a YAML configuration
+        ''')
+
+    parser.add_argument('-f','--file-path', nargs='?', const="counters.yaml", default=None,
+                        help="path to the yaml file")
+    
+    parser.add_argument('-b','--bsv-output', nargs='?', const="GenerateHPMVector.bsv", default=None,
+                        help="generate Bluespec file for defining RISC-V HPM events")
+    
+    parser.add_argument('-s','--bsv-stat-definitions-output', nargs='?', const="StatCounters.bsv", default=None,
+                        help="generate Bluespec file for defining RISC-V HPM events")
+    
+    parser.add_argument('-c','--c-output', nargs='?', const="counters.h", default=None,
+                        help="generate C header file for defining RISC-V HPM events")
+    
+    args = parser.parse_args()
+
+    file_path = args.file_path
+
+    if args.c_output:
+        genCOutput(file_path, args.c_output)
+
+    if args.bsv_output:
+        genHPMVector(file_path, args.bsv_output)
+
+    if args.bsv_stat_definitions_output:
+        genStatCounters(file_path, args.bsv_stat_definitions_output)
+
+
+if __name__ == "__main__":
+    main()
