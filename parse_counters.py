@@ -80,21 +80,9 @@ parser = argparse.ArgumentParser(description='''
 def roundup_power2 (x):
     return 2**(max(0, x-1)).bit_length()
 
-parser.add_argument('-f','--file-path', nargs='?', const="counters.yaml", default=None,
-                    help="path to the yaml file")
-
-parser.add_argument('-b','--bsv-output', nargs='?', const="GenerateHPMVector.bsv", default=None,
-                    help="generate Bluespec file for defining RISC-V HPM events")
-
-parser.add_argument('-s','--bsv-stat-definitions-output', nargs='?', const="StatCounters.bsv", default=None,
-                    help="generate Bluespec file for defining RISC-V HPM events")
-
-parser.add_argument('-c','--c-output', nargs='?', const="counters.h", default=None,
-                    help="generate C header file for defining RISC-V HPM events")
-
-args = parser.parse_args()
 
 def sanity_check(ya):
+# check that in between (for range)
     vec_list = []
     for key, item in (ya.items()):
         start_off = item["start_off"]
@@ -154,8 +142,9 @@ def genStatCounters(file_path, ofile_name):
     struct_decls = ""
     no_of_events_decl = ""
     no_of_ev = 0
-    with open(args.file_path, "r") as yfile, open(args.bsv_stat_definitions_output, "w") as ofile:
+    with open(file_path, "r") as yfile, open(ofile_name, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
+        sanity_check(ya)
 
         hpm_events_struct = ""
         if(len(ya) > 0):
@@ -202,13 +191,11 @@ def genCOutput(file_path, ofile_name):
         ofile.write(defines)
 
 def main():
-    # noinspection PyTypeChecker
-
     parser = argparse.ArgumentParser(description='''
         Generate source files from a YAML configuration
         ''')
 
-    parser.add_argument('-f','--file-path', nargs='?', const="counters.yaml", default=None,
+    parser.add_argument('file_path', type=str, metavar='FILE_PATH',
                         help="path to the yaml file")
     
     parser.add_argument('-b','--bsv-output', nargs='?', const="GenerateHPMVector.bsv", default=None,
