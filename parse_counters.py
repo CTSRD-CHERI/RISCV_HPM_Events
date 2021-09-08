@@ -94,6 +94,16 @@ parser.add_argument('-c','--c-output', nargs='?', const="counters.h", default=No
 
 args = parser.parse_args()
 
+def sanity_check(ya):
+    vec_list = []
+    for key, item in (ya.items()):
+        start_off = item["start_off"]
+        end_off = item["end_off"]
+        for cnt, idx in (item["events"].items()):
+            if(idx + start_off >= end_off):
+                sys.exit( key + ": counter " + cnt + " is out of bounds")
+
+
 def genHPMVector(file_path, ofile_name):
     header = c_bsv_header
     header += header_date 
@@ -106,17 +116,7 @@ def genHPMVector(file_path, ofile_name):
     no_of_ev = 0
     with open(file_path, "r") as yfile, open(ofile_name, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
-        vec_list = []
-        for k in (ya.keys()):
-            start_off = ya[k]["start_off"]
-            end_off = ya[k]["end_off"]
-            for c in (ya[k]["events"]):
-                if(ya[k]["events"][c] + start_off >= end_off):
-                    sys.exit("Node has counter numbers out of bounds: " + k)
-            vec_list.append(ya[k])
-        vec_list.sort(key=lambda x: x["start_off"])
-        append_list = []
-
+        sanity_check(ya)
 
         for key, item in (ya.items()):
             li = list(item["events"].items())
