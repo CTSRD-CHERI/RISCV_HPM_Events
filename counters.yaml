@@ -77,7 +77,7 @@
   d_l1_events:
     struct_name: "EventsL1D"
     start_off: 0x30
-    end_off: 0x3d
+    end_off: 0x3e
     events:
       ld:       0x0
       ld_miss:  0x1
@@ -92,18 +92,22 @@
       tlb_miss: 0x0a
       tlb_miss_lat: 0x0b
       tlb_flush: 0x0c
+      evict: 0xd
 
   ll_events:
     struct_name: "EventsLL"
     start_off: 0x60
-    end_off: 0x6d
+    end_off: 0x6e
     events:
+      ld: 0x0
       ld_miss:  0x1
       ld_miss_lat: 0x02
+      st: 0x3
       st_miss: 0x4
-      tlb:      0x09
-      tlb_miss: 0x0a
-      tlb_flush: 0x0c
+      tlb:      0x9
+      tlb_miss: 0xa
+      tlb_flush: 0xc
+      evict: 0xd
 
   tgc_events:
     struct_name: "EventsCacheCore"

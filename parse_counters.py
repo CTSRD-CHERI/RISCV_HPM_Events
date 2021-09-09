@@ -82,13 +82,12 @@ def roundup_power2 (x):
 
 
 def sanity_check(ya):
-# check that in between (for range)
     vec_list = []
     for key, item in (ya.items()):
         start_off = item["start_off"]
         end_off = item["end_off"]
         for cnt, idx in (item["events"].items()):
-            if(idx + start_off >= end_off):
+            if(not((idx + start_off) in range(start_off, end_off))):
                 sys.exit( key + ": counter " + cnt + " is out of bounds")
 
 
