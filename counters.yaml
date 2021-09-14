@@ -56,6 +56,13 @@
       load_wait:  0x10
       store_wait:  0x11
       fence:    0x12
+      f_busy_no_consume: 0x13
+      d_busy_no_consume: 0x14
+      1_busy_no_consume: 0x15
+      2_busy_no_consume: 0x16
+      3_busy_no_consume: 0x17
+      imprecise_setbound: 0x18
+      unrepresentable_cap: 0x19
       mem_cap_load: 0x1a
       mem_cap_store: 0x1b
       mem_cap_load_tag_set: 0x1c
