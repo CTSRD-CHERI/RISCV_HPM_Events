@@ -91,12 +91,12 @@ def sanity_check(ya):
                 sys.exit( key + ": counter " + cnt + " is out of bounds")
 
 
-def genHPMVector(file_path, ofile_name):
+def genHPMVector(file_path, ofile_name, imports):
     header = c_bsv_header
-    header += header_date 
+    header += header_date
     imp_decl = "import Vector::*;"
     imp_decl += "\nimport StatCounters::*;"
-    imp_decl += "\nimport ProcTypes::*;"
+    imp_decl += imports
     f_end = "\nendfunction"
     struct_acc = ""
     vec_defs = ""
@@ -132,10 +132,10 @@ def genHPMVector(file_path, ofile_name):
         ofile.write(f_end)
 
 
-def genStatCounters(file_path, ofile_name):
+def genStatCounters(file_path, ofile_name, imports):
     header = c_bsv_header
     header += header_date
-    imp_decl = "import ProcTypes::*;"
+    imp_decl = imports
     _ifdef = "\n\n`ifdef PERFORMANCE_MONITORING"
     _endif = "\n`endif"
     struct_decls = ""
@@ -196,28 +196,37 @@ def main():
 
     parser.add_argument('file_path', type=str, metavar='FILE_PATH',
                         help="path to the yaml file")
-    
+
+    parser.add_argument('impl', choices=['Flute', 'Toooba'],
+                        help="implementations currently supported")
+
     parser.add_argument('-b','--bsv-output', nargs='?', const="GenerateHPMVector.bsv", default=None,
                         help="generate Bluespec file for defining RISC-V HPM events")
-    
+
     parser.add_argument('-s','--bsv-stat-definitions-output', nargs='?', const="StatCounters.bsv", default=None,
                         help="generate Bluespec file for defining RISC-V HPM events")
-    
+
     parser.add_argument('-c','--c-output', nargs='?', const="counters.h", default=None,
                         help="generate C header file for defining RISC-V HPM events")
-    
+
     args = parser.parse_args()
 
     file_path = args.file_path
+
+    imports = ""
+    if(args.impl == 'Flute'):
+            imports = "\nimport ISA_Decls::*;"
+    elif(args.impl == 'Toooba'):
+            imports = "\nimport ProcTypes::*;"
 
     if args.c_output:
         genCOutput(file_path, args.c_output)
 
     if args.bsv_output:
-        genHPMVector(file_path, args.bsv_output)
+        genHPMVector(file_path, args.bsv_output, imports)
 
     if args.bsv_stat_definitions_output:
-        genStatCounters(file_path, args.bsv_stat_definitions_output)
+        genStatCounters(file_path, args.bsv_stat_definitions_output, imports)
 
 
 if __name__ == "__main__":
