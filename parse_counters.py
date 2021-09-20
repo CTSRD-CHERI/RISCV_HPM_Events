@@ -138,8 +138,6 @@ def genStatCounters(config_filename, ofile_name, imports):
     header = c_bsv_header
     header += header_date
     imp_decl = imports
-    _ifdef = "\n\n`ifdef PERFORMANCE_MONITORING"
-    _endif = "\n`endif"
     struct_decls = ""
     no_of_events_decl = ""
     no_of_ev = 0
@@ -166,11 +164,9 @@ def genStatCounters(config_filename, ofile_name, imports):
         no_of_events_decl += "\ntypedef %d No_Of_Evts;" % (no_of_ev)
         ofile.write(header)
         ofile.write(imp_decl)
-        ofile.write(_ifdef)
         ofile.write(no_of_events_decl)
         ofile.write(struct_decls)
         ofile.write(hpm_events_struct)
-        ofile.write(_endif)
 
 
 def genCOutput(config_filename, ofile_name):
