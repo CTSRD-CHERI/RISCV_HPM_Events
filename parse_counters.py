@@ -91,7 +91,7 @@ def sanity_check(ya):
                 sys.exit(key + ": counter " + cnt + " is out of bounds")
 
 
-def genHPMVector(file_path, ofile_name, imports):
+def genHPMVector(config_filename, ofile_name, imports):
     header = c_bsv_header
     header += header_date
     imp_decl = "import Vector::*;"
@@ -101,7 +101,7 @@ def genHPMVector(file_path, ofile_name, imports):
     struct_acc = ""
     vec_defs = ""
     no_of_ev = 0
-    with open(file_path, "r") as yfile, open(ofile_name, "w") as ofile:
+    with open(config_filename, "r") as yfile, open(ofile_name, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
         sanity_check(ya)
 
@@ -134,7 +134,7 @@ def genHPMVector(file_path, ofile_name, imports):
         ofile.write(f_end)
 
 
-def genStatCounters(file_path, ofile_name, imports):
+def genStatCounters(config_filename, ofile_name, imports):
     header = c_bsv_header
     header += header_date
     imp_decl = imports
@@ -143,7 +143,7 @@ def genStatCounters(file_path, ofile_name, imports):
     struct_decls = ""
     no_of_events_decl = ""
     no_of_ev = 0
-    with open(file_path, "r") as yfile, open(ofile_name, "w") as ofile:
+    with open(config_filename, "r") as yfile, open(ofile_name, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
         sanity_check(ya)
 
@@ -173,10 +173,10 @@ def genStatCounters(file_path, ofile_name, imports):
         ofile.write(_endif)
 
 
-def genCOutput(file_path, ofile_name):
+def genCOutput(config_filename, ofile_name):
     header = c_bsv_header
     header += header_date
-    with open(file_path, "r") as yfile, open(ofile_name, "w") as ofile:
+    with open(config_filename, "r") as yfile, open(ofile_name, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
         defines = ""
         for key, item in ya.items():
@@ -194,30 +194,29 @@ def genCOutput(file_path, ofile_name):
 
 def main():
     parser = argparse.ArgumentParser(description='''
-        Generate source files from a YAML configuration
+        Generate RISC-V HPM events source files from a YAML configuration
         ''')
 
-    parser.add_argument('file_path', type=str, metavar='FILE_PATH',
-                        help="path to the yaml file")
+    parser.add_argument('config', type=str, help="path to the YAML file")
 
     parser.add_argument('impl', choices=['Flute', 'Toooba'],
-                        help="implementations currently supported")
+                        help="implementation to generate code for")
 
-    parser.add_argument('-b', '--bsv-output', nargs='?',
+    parser.add_argument('-b', '--bsv-output', nargs='?', metavar='file',
                         const="GenerateHPMVector.bsv", default=None,
-                        help="generate Bluespec file for defining RISC-V HPM events")
+                        help="output BSV struct to bit vector converter")
 
     parser.add_argument('-s', '--bsv-stat-definitions-output', nargs='?',
-                        const="StatCounters.bsv", default=None,
-                        help="generate Bluespec file for defining RISC-V HPM events")
+                        metavar='file', const="StatCounters.bsv", default=None,
+                        help="output BSV struct definition")
 
-    parser.add_argument('-c', '--c-output', nargs='?', const="counters.h",
-                        default=None,
-                        help="generate C header file for defining RISC-V HPM events")
+    parser.add_argument('-c', '--c-output', nargs='?', metavar='file',
+                        const="counters.h", default=None,
+                        help="output C header with event numbers")
 
     args = parser.parse_args()
 
-    file_path = args.file_path
+    config_filename = args.config
 
     imports = ""
     if args.impl == 'Flute':
@@ -226,13 +225,14 @@ def main():
         imports = "\nimport ProcTypes::*;"
 
     if args.c_output:
-        genCOutput(file_path, args.c_output)
+        genCOutput(config_filename, args.c_output)
 
     if args.bsv_output:
-        genHPMVector(file_path, args.bsv_output, imports)
+        genHPMVector(config_filename, args.bsv_output, imports)
 
     if args.bsv_stat_definitions_output:
-        genStatCounters(file_path, args.bsv_stat_definitions_output, imports)
+        genStatCounters(config_filename, args.bsv_stat_definitions_output,
+                        imports)
 
 
 if __name__ == "__main__":
