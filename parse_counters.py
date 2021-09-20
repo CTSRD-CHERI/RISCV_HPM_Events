@@ -1,5 +1,5 @@
 #! /usr/bin/env python3
-#-
+#
 # SPDX-License-Identifier: BSD-2-Clause
 #
 # Copyright (c) 2021 Franz Fuchs
@@ -77,18 +77,18 @@ parser = argparse.ArgumentParser(description='''
     Generate source files from a YAML configuration
     ''')
 
-def roundup_power2 (x):
+
+def roundup_power2(x):
     return 2**(max(0, x-1)).bit_length()
 
 
 def sanity_check(ya):
-    vec_list = []
-    for key, item in (ya.items()):
+    for key, item in ya.items():
         start_off = item["start_off"]
         end_off = item["end_off"]
-        for cnt, idx in (item["events"].items()):
-            if(not((idx + start_off) in range(start_off, end_off))):
-                sys.exit( key + ": counter " + cnt + " is out of bounds")
+        for cnt, idx in item["events"].items():
+            if not (idx + start_off) in range(start_off, end_off):
+                sys.exit(key + ": counter " + cnt + " is out of bounds")
 
 
 def genHPMVector(file_path, ofile_name, imports):
@@ -105,22 +105,24 @@ def genHPMVector(file_path, ofile_name, imports):
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
         sanity_check(ya)
 
-        for key, item in (ya.items()):
+        for key, item in ya.items():
             li = list(item["events"].items())
             li.sort(key=lambda x: x[1])
-            if(len(li) == 0):
+            if len(li) == 0:
                 sys.exit("length == 0 of " + key)
             offset = item["start_off"]
             no_of_ev = max(item["end_off"], no_of_ev)
-            struct_acc += "\n\tif(ev.mab_" + item["struct_name"] + " matches tagged Valid .t) begin"
+            struct_acc += "\n\tif(ev.mab_" + item["struct_name"] + \
+                " matches tagged Valid .t) begin"
             for cnt, idx in li:
-                struct_acc += "\n\t\tevents[" + str(offset + idx) + "] = t.evt_" + cnt.upper() + ";"
+                struct_acc += "\n\t\tevents[" + str(offset + idx) + \
+                    "] = t.evt_" + cnt.upper() + ";"
             struct_acc += "\n\tend"
 
-
-
-        f_begin = "\n\nfunction Vector#(" + str(no_of_ev) + ", " + data_t + ") generateHPMVector(HPMEvents ev);"
-        f_begin += "\n\tVector#(" + str(no_of_ev) + ", " + data_t + ") events = replicate(0);"
+        f_begin = "\n\nfunction Vector#(" + str(no_of_ev) + ", " + data_t + \
+            ") generateHPMVector(HPMEvents ev);"
+        f_begin += "\n\tVector#(" + str(no_of_ev) + ", " + data_t + \
+            ") events = replicate(0);"
         ret = "\n\treturn events;"
 
         ofile.write(header)
@@ -146,9 +148,9 @@ def genStatCounters(file_path, ofile_name, imports):
         sanity_check(ya)
 
         hpm_events_struct = ""
-        if(len(ya) > 0):
+        if len(ya) > 0:
             hpm_events_struct += "\n\ntypedef struct {"
-        for key, item in (ya.items()):
+        for key, item in ya.items():
             li = list(item["events"].items())
             li.sort(key=lambda x: x[1])
             decl = "\n\ntypedef struct {"
@@ -156,9 +158,10 @@ def genStatCounters(file_path, ofile_name, imports):
                 decl += "\n\t" + data_t + " evt_" + cnt.upper() + ";"
             decl += "\n} " + item["struct_name"] + " deriving (Bits, FShow);"
             struct_decls += decl
-            hpm_events_struct += "\n\tMaybe#(" + item["struct_name"] + ") mab_" + item["struct_name"] + ";"
+            hpm_events_struct += "\n\tMaybe#(" + item["struct_name"] + \
+                ") mab_" + item["struct_name"] + ";"
             no_of_ev = max(item["end_off"], no_of_ev)
-        if(len(ya) > 0):
+        if len(ya) > 0:
             hpm_events_struct += "\n} HPMEvents deriving (Bits, FShow);"
         no_of_events_decl += "\ntypedef %d No_Of_Evts;" % (no_of_ev)
         ofile.write(header)
@@ -166,7 +169,7 @@ def genStatCounters(file_path, ofile_name, imports):
         ofile.write(_ifdef)
         ofile.write(no_of_events_decl)
         ofile.write(struct_decls)
-        ofile.write(hpm_events_struct);
+        ofile.write(hpm_events_struct)
         ofile.write(_endif)
 
 
@@ -175,19 +178,19 @@ def genCOutput(file_path, ofile_name):
     header += header_date
     with open(file_path, "r") as yfile, open(ofile_name, "w") as ofile:
         ya = yaml.load(yfile, Loader=yaml.FullLoader)
-        vec_list = []
         defines = ""
-        for key, item in (ya.items()):
+        for key, item in ya.items():
             li = list(item["events"].items())
             li.sort(key=lambda x: x[1])
             start_off = item["start_off"]
             defines += "\n\n// " + key.upper()
             for cnt, idx in li:
-                defines += "\n#define " + key + "_" + cnt.upper() + " " + str(start_off + idx)
-
+                defines += "\n#define " + key + "_" + cnt.upper() + " " + \
+                    str(start_off + idx)
 
         ofile.write(header)
         ofile.write(defines)
+
 
 def main():
     parser = argparse.ArgumentParser(description='''
@@ -200,13 +203,16 @@ def main():
     parser.add_argument('impl', choices=['Flute', 'Toooba'],
                         help="implementations currently supported")
 
-    parser.add_argument('-b','--bsv-output', nargs='?', const="GenerateHPMVector.bsv", default=None,
+    parser.add_argument('-b', '--bsv-output', nargs='?',
+                        const="GenerateHPMVector.bsv", default=None,
                         help="generate Bluespec file for defining RISC-V HPM events")
 
-    parser.add_argument('-s','--bsv-stat-definitions-output', nargs='?', const="StatCounters.bsv", default=None,
+    parser.add_argument('-s', '--bsv-stat-definitions-output', nargs='?',
+                        const="StatCounters.bsv", default=None,
                         help="generate Bluespec file for defining RISC-V HPM events")
 
-    parser.add_argument('-c','--c-output', nargs='?', const="counters.h", default=None,
+    parser.add_argument('-c', '--c-output', nargs='?', const="counters.h",
+                        default=None,
                         help="generate C header file for defining RISC-V HPM events")
 
     args = parser.parse_args()
@@ -214,10 +220,10 @@ def main():
     file_path = args.file_path
 
     imports = ""
-    if(args.impl == 'Flute'):
-            imports = "\nimport ISA_Decls::*;"
-    elif(args.impl == 'Toooba'):
-            imports = "\nimport ProcTypes::*;"
+    if args.impl == 'Flute':
+        imports = "\nimport ISA_Decls::*;"
+    elif args.impl == 'Toooba':
+        imports = "\nimport ProcTypes::*;"
 
     if args.c_output:
         genCOutput(file_path, args.c_output)
