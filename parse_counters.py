@@ -145,7 +145,7 @@ def genHPMVector(config, filename, report_width_import):
     function += "\tVector#(" + str(config.end) + ", " + data_t + \
         ") events = replicate(0);\n"
     for eventset in config.eventsets:
-        function += "\tif(ev.mab_" + eventset.struct_name + \
+        function += "\tif (ev.mab_" + eventset.struct_name + \
             " matches tagged Valid .t) begin\n"
         for event in eventset.events:
             function += "\t\tevents[" + \
