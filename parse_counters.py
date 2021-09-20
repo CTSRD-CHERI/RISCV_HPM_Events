@@ -35,7 +35,6 @@
 import yaml
 import argparse
 from datetime import datetime
-import sys
 
 c_bsv_header = """/*-
  * SPDX-License-Identifier: BSD-2-Clause
@@ -78,20 +77,57 @@ parser = argparse.ArgumentParser(description='''
     ''')
 
 
-def roundup_power2(x):
-    return 2**(max(0, x-1)).bit_length()
+class Event():
+    def __init__(self, name, offset):
+        super().__init__()
+        self.name = name
+        self.offset = offset
 
 
-def sanity_check(ya):
-    for key, item in ya.items():
-        start_off = item["start_off"]
-        end_off = item["end_off"]
-        for cnt, idx in item["events"].items():
-            if not (idx + start_off) in range(start_off, end_off):
-                sys.exit(key + ": counter " + cnt + " is out of bounds")
+class EventSet():
+    def __init__(self, name, config):
+        super().__init__()
+        self.name = name
+        self.struct_name = config["struct_name"]
+        self.start = config["start_off"]
+        self.end = config["end_off"]
+        events = []
+        for event, offset in config["events"].items():
+            if offset not in range(0, self.end - self.start):
+                raise ValueError(name + " event " + event + " - out of bounds")
+            events.append(Event(event, offset))
+        events.sort(key=lambda event: event.offset)
+        if not events:
+            raise ValueError(name + " has no events defined")
+        self.events = events
 
 
-def genHPMVector(config_filename, ofile_name, imports):
+class EventsConfig():
+    def __init__(self, config):
+        super().__init__()
+        sets = []
+        for name, eventset in config:
+            sets.append(EventSet(name, eventset))
+        if not sets:
+            raise ValueError("no event sets defined")
+        sets.sort(key=lambda eventset: eventset.start)
+        prev_end = -1
+        for eventset in sets:
+            if eventset.start <= prev_end:
+                raise ValueError(eventset.name +
+                                 " overlaps with previous event set")
+        self.eventsets = sets
+        self.start = sets[0].start
+        self.end = sets[-1].end
+
+
+def load_config(filename):
+    with open(filename, "r") as f:
+        ya = yaml.load(f, Loader=yaml.FullLoader)
+        return EventsConfig(ya.items())
+
+
+def genHPMVector(config, filename, imports):
     header = c_bsv_header
     header += header_date
     imp_decl = "import Vector::*;"
@@ -100,92 +136,71 @@ def genHPMVector(config_filename, ofile_name, imports):
     f_end = "\nendfunction"
     struct_acc = ""
     vec_defs = ""
-    no_of_ev = 0
-    with open(config_filename, "r") as yfile, open(ofile_name, "w") as ofile:
-        ya = yaml.load(yfile, Loader=yaml.FullLoader)
-        sanity_check(ya)
 
-        for key, item in ya.items():
-            li = list(item["events"].items())
-            li.sort(key=lambda x: x[1])
-            if len(li) == 0:
-                sys.exit("length == 0 of " + key)
-            offset = item["start_off"]
-            no_of_ev = max(item["end_off"], no_of_ev)
-            struct_acc += "\n\tif(ev.mab_" + item["struct_name"] + \
+    with open(filename, "w") as f:
+        for eventset in config.eventsets:
+            struct_acc += "\n\tif(ev.mab_" + eventset.struct_name + \
                 " matches tagged Valid .t) begin"
-            for cnt, idx in li:
-                struct_acc += "\n\t\tevents[" + str(offset + idx) + \
-                    "] = t.evt_" + cnt.upper() + ";"
+            for event in eventset.events:
+                struct_acc += "\n\t\tevents[" + \
+                    str(eventset.start + event.offset) + \
+                    "] = t.evt_" + event.name.upper() + ";"
             struct_acc += "\n\tend"
 
-        f_begin = "\n\nfunction Vector#(" + str(no_of_ev) + ", " + data_t + \
+        f_begin = "\n\nfunction Vector#(" + str(config.end) + ", " + data_t + \
             ") generateHPMVector(HPMEvents ev);"
-        f_begin += "\n\tVector#(" + str(no_of_ev) + ", " + data_t + \
+        f_begin += "\n\tVector#(" + str(config.end) + ", " + data_t + \
             ") events = replicate(0);"
         ret = "\n\treturn events;"
 
-        ofile.write(header)
-        ofile.write(imp_decl)
-        ofile.write(f_begin)
-        ofile.write(vec_defs)
-        ofile.write(struct_acc)
-        ofile.write(ret)
-        ofile.write(f_end)
+        f.write(header)
+        f.write(imp_decl)
+        f.write(f_begin)
+        f.write(vec_defs)
+        f.write(struct_acc)
+        f.write(ret)
+        f.write(f_end)
 
 
-def genStatCounters(config_filename, ofile_name, imports):
+def genStatCounters(config, filename, imports):
     header = c_bsv_header
     header += header_date
     imp_decl = imports
     struct_decls = ""
     no_of_events_decl = ""
-    no_of_ev = 0
-    with open(config_filename, "r") as yfile, open(ofile_name, "w") as ofile:
-        ya = yaml.load(yfile, Loader=yaml.FullLoader)
-        sanity_check(ya)
-
-        hpm_events_struct = ""
-        if len(ya) > 0:
-            hpm_events_struct += "\n\ntypedef struct {"
-        for key, item in ya.items():
-            li = list(item["events"].items())
-            li.sort(key=lambda x: x[1])
+    with open(filename, "w") as f:
+        hpm_events_struct = "\n\ntypedef struct {"
+        for eventset in config.eventsets:
             decl = "\n\ntypedef struct {"
-            for cnt, idx in li:
-                decl += "\n\t" + data_t + " evt_" + cnt.upper() + ";"
-            decl += "\n} " + item["struct_name"] + " deriving (Bits, FShow);"
+            for event in eventset.events:
+                decl += "\n\t" + data_t + " evt_" + event.name.upper() + ";"
+            decl += "\n} " + eventset.struct_name + " deriving (Bits, FShow);"
             struct_decls += decl
-            hpm_events_struct += "\n\tMaybe#(" + item["struct_name"] + \
-                ") mab_" + item["struct_name"] + ";"
-            no_of_ev = max(item["end_off"], no_of_ev)
-        if len(ya) > 0:
-            hpm_events_struct += "\n} HPMEvents deriving (Bits, FShow);"
-        no_of_events_decl += "\ntypedef %d No_Of_Evts;" % (no_of_ev)
-        ofile.write(header)
-        ofile.write(imp_decl)
-        ofile.write(no_of_events_decl)
-        ofile.write(struct_decls)
-        ofile.write(hpm_events_struct)
+            hpm_events_struct += "\n\tMaybe#(" + eventset.struct_name + \
+                ") mab_" + eventset.struct_name + ";"
+        hpm_events_struct += "\n} HPMEvents deriving (Bits, FShow);"
+        no_of_events_decl += "\ntypedef %d No_Of_Evts;" % (config.end)
+        f.write(header)
+        f.write(imp_decl)
+        f.write(no_of_events_decl)
+        f.write(struct_decls)
+        f.write(hpm_events_struct)
 
 
-def genCOutput(config_filename, ofile_name):
+def genCOutput(config, filename):
     header = c_bsv_header
     header += header_date
-    with open(config_filename, "r") as yfile, open(ofile_name, "w") as ofile:
-        ya = yaml.load(yfile, Loader=yaml.FullLoader)
+    with open(filename, "w") as f:
         defines = ""
-        for key, item in ya.items():
-            li = list(item["events"].items())
-            li.sort(key=lambda x: x[1])
-            start_off = item["start_off"]
-            defines += "\n\n// " + key.upper()
-            for cnt, idx in li:
-                defines += "\n#define " + key + "_" + cnt.upper() + " " + \
-                    str(start_off + idx)
+        for eventset in config.eventsets:
+            defines += "\n\n// " + eventset.name.upper()
+            for event in eventset.events:
+                defines += "\n#define " + eventset.name + "_" + \
+                    event.name.upper() + " " + \
+                    str(eventset.start + event.offset)
 
-        ofile.write(header)
-        ofile.write(defines)
+        f.write(header)
+        f.write(defines)
 
 
 def main():
@@ -212,7 +227,7 @@ def main():
 
     args = parser.parse_args()
 
-    config_filename = args.config
+    config = load_config(args.config)
 
     imports = ""
     if args.impl == 'Flute':
@@ -221,14 +236,13 @@ def main():
         imports = "\nimport ProcTypes::*;"
 
     if args.c_output:
-        genCOutput(config_filename, args.c_output)
+        genCOutput(config, args.c_output)
 
     if args.bsv_output:
-        genHPMVector(config_filename, args.bsv_output, imports)
+        genHPMVector(config, args.bsv_output, imports)
 
     if args.bsv_stat_definitions_output:
-        genStatCounters(config_filename, args.bsv_stat_definitions_output,
-                        imports)
+        genStatCounters(config, args.bsv_stat_definitions_output, imports)
 
 
 if __name__ == "__main__":
