@@ -188,7 +188,7 @@ def genCOutput(config, filename):
     for eventset in config.eventsets:
         section = "// " + eventset.name.upper() + "\n"
         for event in eventset.events:
-            section += "#define " + eventset.name + "_" + \
+            section += "#define " + eventset.name.upper() + "_" + \
                 event.name.upper() + " " + \
                 str(eventset.start + event.offset) + "\n"
         sections.append(section)
