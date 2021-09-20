@@ -35,6 +35,7 @@
 import yaml
 import argparse
 from datetime import datetime
+import sys
 
 c_bsv_header = """/*-
  * SPDX-License-Identifier: BSD-2-Clause
@@ -127,13 +128,13 @@ def load_config(filename):
         return EventsConfig(ya.items())
 
 
-def genHPMVector(config, filename, imports):
+def genHPMVector(config, filename, report_width_import):
     sections = []
     sections.append(c_bsv_header)
     sections.append(header_date)
     imp_decl = "import Vector::*;\n"
     imp_decl += "import StatCounters::*;\n"
-    imp_decl += imports
+    imp_decl += report_width_import
     sections.append(imp_decl)
 
     function = "function Vector#(" + str(config.end) + ", " + data_t + \
@@ -156,11 +157,11 @@ def genHPMVector(config, filename, imports):
         f.write("\n".join(sections))
 
 
-def genStatCounters(config, filename, imports):
+def genStatCounters(config, filename, report_width_import):
     sections = []
     sections.append(c_bsv_header)
     sections.append(header_date)
-    sections.append(imports)
+    sections.append(report_width_import)
     sections.append("typedef %d No_Of_Evts;\n" % (config.end))
 
     hpm_events_struct = "typedef struct {\n"
@@ -203,8 +204,8 @@ def main():
 
     parser.add_argument('config', type=str, help="path to the YAML file")
 
-    parser.add_argument('impl', choices=['Flute', 'Toooba'],
-                        help="implementation to generate code for")
+    parser.add_argument('-m', '--bsv-report-width-module', metavar='module',
+                        default=None, help="module containing Report_Width")
 
     parser.add_argument('-b', '--bsv-output', nargs='?', metavar='file',
                         const="GenerateHPMVector.bsv", default=None,
@@ -222,20 +223,21 @@ def main():
 
     config = load_config(args.config)
 
-    imports = ""
-    if args.impl == 'Flute':
-        imports = "import ISA_Decls::*;\n"
-    elif args.impl == 'Toooba':
-        imports = "import ProcTypes::*;\n"
+    def get_report_width_import():
+        if not args.bsv_report_width_module:
+            sys.exit("Must specify the module containing Report_Width " +
+                     "when generating BSV output")
+        return "import " + args.bsv_report_width_module + "::Report_Width;\n"
 
     if args.c_output:
         genCOutput(config, args.c_output)
 
     if args.bsv_output:
-        genHPMVector(config, args.bsv_output, imports)
+        genHPMVector(config, args.bsv_output, get_report_width_import())
 
     if args.bsv_stat_definitions_output:
-        genStatCounters(config, args.bsv_stat_definitions_output, imports)
+        genStatCounters(config, args.bsv_stat_definitions_output,
+                        get_report_width_import())
 
 
 if __name__ == "__main__":
