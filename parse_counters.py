@@ -115,11 +115,12 @@ class EventsConfig():
         if not sets:
             raise ValueError("no event sets defined")
         sets.sort(key=lambda eventset: eventset.start)
-        prev_end = -1
+        prev_end = 0
         for eventset in sets:
-            if eventset.start <= prev_end:
+            if eventset.start < prev_end:
                 raise ValueError(eventset.name +
                                  " overlaps with previous event set")
+            prev_end = eventset.end
         self.eventsets = sets
         self.start = sets[0].start
         self.end = sets[-1].end
