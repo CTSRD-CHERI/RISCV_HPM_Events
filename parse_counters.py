@@ -231,7 +231,7 @@ def main():
         if not args.bsv_report_width_module:
             sys.exit("Must specify the module containing Report_Width " +
                      "when generating BSV output")
-        return "import " + args.bsv_report_width_module + "::Report_Width;\n"
+        return "import " + args.bsv_report_width_module + "::*;\n"
 
     if args.c_output:
         genCOutput(config, args.c_output)
