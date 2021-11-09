@@ -128,7 +128,7 @@ class EventsConfig():
 
 def load_config(filename):
     with open(filename, "r") as f:
-        ya = yaml.load(f, Loader=yaml.FullLoader)
+        ya = yaml.safe_load(f)
         return EventsConfig(ya.items())
 
 
