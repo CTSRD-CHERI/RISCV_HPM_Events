@@ -68,7 +68,7 @@
       mem_cap_load_tag_set: 0x1c
       mem_cap_store_tag_set: 0x1d
       interrupt: 0x1e
-      reg_usage: 0x1f
+      ptid_change: 0x1f
 
   i_l1_events:
     struct_name: "EventsL1I"
@@ -134,12 +134,13 @@
   trans_exe_events:
     struct_name: "EventsTransExe"
     start_off: 0x70
-    end_off: 0x74
+    end_off: 0x75
     events:
       renamed_inst: 0x00
       wild_jump: 0x01
       wild_exception: 0x02
-      comp_eviction: 0x03
+      uarch_comp_eviction: 0x03
+      uarch_comp_hit: 0x04
 
   ext_slave_events:
     struct_name: "AXI4_Slave_Events"
